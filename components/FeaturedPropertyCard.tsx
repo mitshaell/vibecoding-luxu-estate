@@ -8,7 +8,7 @@ export default function FeaturedPropertyCard({ property }: { property: Property 
       <div className="group relative rounded-xl overflow-hidden shadow-soft bg-white cursor-pointer h-full">
         <div className="aspect-[4/3] w-full overflow-hidden relative">
           <Image
-            src={property.image_url}
+            src={property.images?.[0] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80'}
             alt={property.title}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-105"

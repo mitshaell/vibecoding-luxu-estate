@@ -9,7 +9,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const { data: property } = await supabase
     .from("properties")
-    .select("title, location, image_url")
+    .select("title, location, images")
     .eq("slug", slug)
     .single();
 
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: `${property.title} | LuxeEstate`,
     description: `View ${property.title} located in ${property.location} on LuxeEstate.`,
     openGraph: {
-      images: [property.image_url],
+      images: property.images?.length > 0 ? [property.images[0]] : [],
     }
   };
 }
@@ -48,7 +48,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
           {/* Left Column - Gallery */}
           <div className="lg:col-span-8 space-y-4">
             <div className="relative overflow-hidden rounded-xl shadow-sm group">
-              <ImageGallery images={typedProperty.images || [typedProperty.image_url]} title={typedProperty.title} />
+              <ImageGallery images={typedProperty.images || []} title={typedProperty.title} />
               <div className="absolute top-4 left-4 flex gap-2 pointer-events-none">
                 <span className="bg-mosque text-white text-xs font-medium px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">Premium</span>
                 <span className="bg-white/90 backdrop-blur text-nordic text-xs font-medium px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">New</span>

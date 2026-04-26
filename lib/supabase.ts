@@ -20,7 +20,6 @@ export interface Property {
   beds: number;
   baths: number;
   area: string;
-  image_url: string;
   slug: string;
   images: string[];
   latitude: number;

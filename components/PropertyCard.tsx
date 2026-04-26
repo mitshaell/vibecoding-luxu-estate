@@ -8,7 +8,7 @@ export default function PropertyCard({ property }: { property: Property }) {
       <article className="bg-white rounded-xl overflow-hidden shadow-card hover:shadow-soft transition-all duration-300 group cursor-pointer h-full flex flex-col">
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image
-            src={property.image_url}
+            src={property.images?.[0] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80'}
             alt={property.title}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-110"
