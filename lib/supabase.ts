@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 /**
  * Supabase client — safe to use in Server Components and API routes.
@@ -21,6 +21,10 @@ export interface Property {
   baths: number;
   area: string;
   image_url: string;
+  slug: string;
+  images: string[];
+  latitude: number;
+  longitude: number;
   type: string;
   is_rent: boolean;
   is_featured: boolean;
