@@ -8,29 +8,57 @@ import { supabase } from "../lib/supabase";
 const PAGE_SIZE = 8;
 
 interface HomePageProps {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ 
+    page?: string;
+    location?: string;
+    type?: string;
+    beds?: string;
+    baths?: string;
+  }>;
 }
 
 export default async function Home({ searchParams }: HomePageProps) {
   const params = await searchParams;
   const currentPage = Math.max(1, parseInt(params?.page ?? "1", 10));
+  
+  const location = params?.location;
+  const type = params?.type;
+  const beds = params?.beds ? parseInt(params.beds, 10) : null;
+  const baths = params?.baths ? parseInt(params.baths, 10) : null;
+
   const from = (currentPage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
-  // Parallel queries: featured (static) + paginated market listings
-  const [featuredResult, marketResult] = await Promise.all([
-    supabase
-      .from("properties")
-      .select("*")
-      .eq("is_featured", true)
-      .order("created_at", { ascending: true }),
+  const featuredQuery = supabase
+    .from("properties")
+    .select("*")
+    .eq("is_featured", true)
+    .order("created_at", { ascending: true });
 
-    supabase
-      .from("properties")
-      .select("*", { count: "exact" })
-      .eq("is_featured", false)
-      .order("created_at", { ascending: true })
-      .range(from, to),
+  let marketQuery = supabase
+    .from("properties")
+    .select("*", { count: "exact" })
+    .eq("is_featured", false)
+    .order("created_at", { ascending: true });
+
+  if (location) {
+    marketQuery = marketQuery.ilike("location", `%${location}%`);
+  }
+  if (type) {
+    marketQuery = marketQuery.eq("type", type);
+  }
+  if (beds) {
+    marketQuery = marketQuery.gte("beds", beds);
+  }
+  if (baths) {
+    marketQuery = marketQuery.gte("baths", baths);
+  }
+
+  marketQuery = marketQuery.range(from, to);
+
+  const [featuredResult, marketResult] = await Promise.all([
+    featuredQuery,
+    marketQuery,
   ]);
 
   const featuredProperties = featuredResult.data ?? [];

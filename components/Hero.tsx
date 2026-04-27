@@ -1,4 +1,32 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import SearchFiltersModal from "./SearchFiltersModal";
+
 export default function Hero() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [searchLocation, setSearchLocation] = useState(searchParams?.get("location") || "");
+
+  const handleSearch = () => {
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    if (searchLocation) {
+      params.set("location", searchLocation);
+    } else {
+      params.delete("location");
+    }
+    params.set("page", "1");
+    router.push(`/?${params.toString()}`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
   return (
     <section className="py-12 md:py-16">
       <div className="max-w-3xl mx-auto text-center space-y-8">
@@ -17,8 +45,14 @@ export default function Hero() {
             className="block w-full pl-12 pr-4 py-4 rounded-xl border-none bg-white text-nordic-dark shadow-soft placeholder-nordic-muted/60 focus:ring-2 focus:ring-mosque focus:bg-white transition-all text-lg" 
             placeholder="Search by city, neighborhood, or address..." 
             type="text" 
+            value={searchLocation}
+            onChange={(e) => setSearchLocation(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
-          <button className="absolute inset-y-2 right-2 px-6 bg-mosque hover:bg-mosque/90 text-white font-medium rounded-lg transition-colors flex items-center justify-center shadow-lg shadow-mosque/20">
+          <button 
+            onClick={handleSearch}
+            className="absolute inset-y-2 right-2 px-6 bg-mosque hover:bg-mosque/90 text-white font-medium rounded-lg transition-colors flex items-center justify-center shadow-lg shadow-mosque/20"
+          >
             Search
           </button>
         </div>
@@ -40,11 +74,18 @@ export default function Hero() {
             Penthouse
           </button>
           <div className="w-px h-6 bg-nordic-dark/10 mx-2"></div>
-          <button className="whitespace-nowrap flex items-center gap-1 px-4 py-2 rounded-full text-nordic-dark font-medium text-sm hover:bg-black/5 transition-colors">
+          <button 
+            onClick={() => setIsFilterModalOpen(true)}
+            className="whitespace-nowrap flex items-center gap-1 px-4 py-2 rounded-full text-nordic-dark font-medium text-sm hover:bg-black/5 transition-colors"
+          >
             <span className="material-icons text-base">tune</span> Filters
           </button>
         </div>
       </div>
+      <SearchFiltersModal 
+        isOpen={isFilterModalOpen} 
+        onClose={() => setIsFilterModalOpen(false)} 
+      />
     </section>
   );
 }
