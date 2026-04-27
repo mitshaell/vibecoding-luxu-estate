@@ -26,6 +26,8 @@ export default async function Home({ searchParams }: HomePageProps) {
   const beds = params?.beds ? parseInt(params.beds, 10) : null;
   const baths = params?.baths ? parseInt(params.baths, 10) : null;
 
+  const isFilterApplied = Boolean(location || type || beds || baths);
+
   const from = (currentPage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
@@ -33,7 +35,8 @@ export default async function Home({ searchParams }: HomePageProps) {
     .from("properties")
     .select("*")
     .eq("is_featured", true)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .limit(2);
 
   let marketQuery = supabase
     .from("properties")
@@ -57,7 +60,7 @@ export default async function Home({ searchParams }: HomePageProps) {
   marketQuery = marketQuery.range(from, to);
 
   const [featuredResult, marketResult] = await Promise.all([
-    featuredQuery,
+    isFilterApplied ? Promise.resolve({ data: [] }) : featuredQuery,
     marketQuery,
   ]);
 
@@ -73,8 +76,9 @@ export default async function Home({ searchParams }: HomePageProps) {
         <Hero />
 
         {/* Featured Collections */}
-        <section className="mb-16">
-          <div className="flex items-end justify-between mb-8">
+        {!isFilterApplied && featuredProperties.length > 0 && (
+          <section className="mb-16">
+            <div className="flex items-end justify-between mb-8">
             <div>
               <h2 className="text-2xl font-light text-nordic-dark">Featured Collections</h2>
               <p className="text-nordic-muted mt-1 text-sm">Curated properties for the discerning eye.</p>
@@ -87,12 +91,13 @@ export default async function Home({ searchParams }: HomePageProps) {
             </a>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {featuredProperties.map((property) => (
-              <FeaturedPropertyCard key={property.id} property={property} />
-            ))}
-          </div>
-        </section>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {featuredProperties.map((property) => (
+                <FeaturedPropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* New in Market */}
         <section>
