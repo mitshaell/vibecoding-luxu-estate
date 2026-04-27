@@ -1,0 +1,38 @@
+{
+  "navbar": {
+    "buy": "Comprar",
+    "rent": "Alquilar",
+    "sell": "Vender",
+    "savedHomes": "Guardados"
+  },
+  "hero": {
+    "titleStart": "Encuentra tu",
+    "titleHighlight": "santuario",
+    "titleEnd": ".",
+    "searchPlaceholder": "Buscar por ciudad, barrio o dirección...",
+    "searchButton": "Buscar",
+    "filters": "Filtros"
+  },
+  "propertyTypes": {
+    "All": "Todos",
+    "House": "Casa",
+    "Apartment": "Apartamento",
+    "Villa": "Villa",
+    "Penthouse": "Ático"
+  },
+  "language": {
+    "es": "Español",
+    "en": "English",
+    "fr": "Français"
+  },
+  "home": {
+    "featuredCollections": "Colecciones Destacadas",
+    "featuredSubtitle": "Propiedades curadas para el ojo exigente.",
+    "viewAll": "Ver todas",
+    "newInMarket": "Nuevo en el Mercado",
+    "newSubtitle": "Nuevas oportunidades — página {currentPage} de {totalPages}.",
+    "all": "Todos",
+    "buy": "Comprar",
+    "rent": "Alquilar"
+  }
+}

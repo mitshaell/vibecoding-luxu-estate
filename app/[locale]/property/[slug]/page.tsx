@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
-import { supabase, Property } from "../../../lib/supabase";
-import Navbar from "../../../components/Navbar";
-import ImageGallery from "../../../components/ImageGallery";
-import MapWrapper from "../../../components/MapWrapper";
+import { supabase, Property } from "../../../../lib/supabase";
+import Navbar from "../../../../components/Navbar";
+import ImageGallery from "../../../../components/ImageGallery";
+import MapWrapper from "../../../../components/MapWrapper";
 import { Metadata } from "next";
+import { getDictionary, Locale } from "../../../../lib/i18n";
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string, locale: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const { data: property } = await supabase
     .from("properties")
@@ -24,8 +25,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function PropertyPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function PropertyPage({ params }: { params: Promise<{ slug: string, locale: string }> }) {
+  const { slug, locale } = await params;
   const { data: property, error } = await supabase
     .from("properties")
     .select("*")
@@ -37,10 +38,11 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
   }
 
   const typedProperty = property as Property;
+  const dict = await getDictionary(locale as Locale);
 
   return (
     <div className="min-h-screen bg-clear-day text-nordic selection:bg-mosque/20">
-      <Navbar />
+      <Navbar dict={dict} locale={locale} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">

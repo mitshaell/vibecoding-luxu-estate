@@ -1,0 +1,38 @@
+{
+  "navbar": {
+    "buy": "Acheter",
+    "rent": "Louer",
+    "sell": "Vendre",
+    "savedHomes": "Sauvegardés"
+  },
+  "hero": {
+    "titleStart": "Trouvez votre",
+    "titleHighlight": "sanctuaire",
+    "titleEnd": ".",
+    "searchPlaceholder": "Rechercher par ville, quartier ou adresse...",
+    "searchButton": "Rechercher",
+    "filters": "Filtres"
+  },
+  "propertyTypes": {
+    "All": "Tout",
+    "House": "Maison",
+    "Apartment": "Appartement",
+    "Villa": "Villa",
+    "Penthouse": "Attique"
+  },
+  "language": {
+    "es": "Español",
+    "en": "English",
+    "fr": "Français"
+  },
+  "home": {
+    "featuredCollections": "Collections en Vedette",
+    "featuredSubtitle": "Des propriétés sélectionnées pour les plus exigeants.",
+    "viewAll": "Voir tout",
+    "newInMarket": "Nouveau sur le Marché",
+    "newSubtitle": "Nouvelles opportunités — page {currentPage} sur {totalPages}.",
+    "all": "Tout",
+    "buy": "Acheter",
+    "rent": "Louer"
+  }
+}
