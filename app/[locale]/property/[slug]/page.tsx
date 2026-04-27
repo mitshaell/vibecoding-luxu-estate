@@ -52,8 +52,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
             <div className="relative overflow-hidden rounded-xl shadow-sm group">
               <ImageGallery images={typedProperty.images || []} title={typedProperty.title} />
               <div className="absolute top-4 left-4 flex gap-2 pointer-events-none">
-                <span className="bg-mosque text-white text-xs font-medium px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">Premium</span>
-                <span className="bg-white/90 backdrop-blur text-nordic text-xs font-medium px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">New</span>
+                <span className="bg-mosque text-white text-xs font-medium px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">{dict.property?.tags?.premium || "Premium"}</span>
+                <span className="bg-white/90 backdrop-blur text-nordic text-xs font-medium px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">{dict.property?.tags?.new || "New"}</span>
               </div>
             </div>
             
@@ -92,7 +92,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                     <h3 className="font-semibold text-nordic">Sarah Jenkins</h3>
                     <div className="flex items-center gap-1 text-xs text-mosque font-medium">
                       <span className="material-icons text-[14px]">star</span>
-                      <span>Top Rated Agent</span>
+                      <span>{dict.property?.agent?.topRated || "Top Rated Agent"}</span>
                     </div>
                   </div>
                   <div className="ml-auto flex gap-2">
@@ -108,11 +108,11 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                 <div className="space-y-3">
                   <button className="w-full bg-mosque hover:bg-[#005544] text-white py-4 px-6 rounded-lg font-medium transition-all shadow-lg shadow-mosque/20 flex items-center justify-center gap-2 group">
                     <span className="material-icons text-xl group-hover:scale-110 transition-transform">calendar_today</span>
-                    Schedule Visit
+                    {dict.property?.agent?.schedule || "Schedule Visit"}
                   </button>
                   <button className="w-full bg-transparent border border-nordic/10 hover:border-mosque text-nordic/80 hover:text-mosque py-4 px-6 rounded-lg font-medium transition-all flex items-center justify-center gap-2">
                     <span className="material-icons text-xl">mail_outline</span>
-                    Contact Agent
+                    {dict.property?.agent?.contact || "Contact Agent"}
                   </button>
                 </div>
               </div>
@@ -132,73 +132,73 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
           {/* Left Column Bottom - Details */}
           <div className="lg:col-span-8 lg:row-start-2 -mt-8 space-y-8">
             <div className="bg-white p-8 rounded-xl shadow-sm border border-mosque/5">
-              <h2 className="text-lg font-semibold mb-6 text-nordic">Property Features</h2>
+              <h2 className="text-lg font-semibold mb-6 text-nordic">{dict.property?.features?.title || "Property Features"}</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">square_foot</span>
                   <span className="text-xl font-bold text-nordic">{typedProperty.area}</span>
-                  <span className="text-xs uppercase tracking-wider text-nordic/50">Square Meters</span>
+                  <span className="text-xs uppercase tracking-wider text-nordic/50">{dict.property?.features?.sqm || "Square Meters"}</span>
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">bed</span>
                   <span className="text-xl font-bold text-nordic">{typedProperty.beds}</span>
-                  <span className="text-xs uppercase tracking-wider text-nordic/50">Bedrooms</span>
+                  <span className="text-xs uppercase tracking-wider text-nordic/50">{dict.property?.features?.beds || "Bedrooms"}</span>
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">shower</span>
                   <span className="text-xl font-bold text-nordic">{typedProperty.baths}</span>
-                  <span className="text-xs uppercase tracking-wider text-nordic/50">Bathrooms</span>
+                  <span className="text-xs uppercase tracking-wider text-nordic/50">{dict.property?.features?.baths || "Bathrooms"}</span>
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">directions_car</span>
                   <span className="text-xl font-bold text-nordic">2</span>
-                  <span className="text-xs uppercase tracking-wider text-nordic/50">Garage</span>
+                  <span className="text-xs uppercase tracking-wider text-nordic/50">{dict.property?.features?.garage || "Garage"}</span>
                 </div>
               </div>
             </div>
             
             <div className="bg-white p-8 rounded-xl shadow-sm border border-mosque/5">
-              <h2 className="text-lg font-semibold mb-4 text-nordic">About this home - {typedProperty.title}</h2>
+              <h2 className="text-lg font-semibold mb-4 text-nordic">{dict.property?.about?.title || "About this home"} - {typedProperty.title}</h2>
               <div className="prose prose-slate max-w-none text-nordic/70 leading-relaxed">
                 <p className="mb-4">
-                  Experience modern luxury in this architecturally stunning home located in the heart of {typedProperty.location}. Designed with an emphasis on indoor-outdoor living, the residence features beautifully designed living spaces that flood the interiors with natural light.
+                  {(dict.property?.about?.p1 || "").replace('{location}', typedProperty.location) || `Experience modern luxury in this architecturally stunning home located in the heart of ${typedProperty.location}. Designed with an emphasis on indoor-outdoor living, the residence features beautifully designed living spaces that flood the interiors with natural light.`}
                 </p>
                 <p>
-                  The exquisite {typedProperty.type.toLowerCase()} offers {typedProperty.beds} spacious bedrooms and {typedProperty.baths} elegant bathrooms. Retreat to the primary suite, a sanctuary of relaxation with a spa-inspired bath, making it a perfect sanctuary for those who appreciate the finer things in life.
+                  {(dict.property?.about?.p2 || "").replace('{type}', typedProperty.type.toLowerCase()).replace('{beds}', typedProperty.beds.toString()).replace('{baths}', typedProperty.baths.toString()) || `The exquisite ${typedProperty.type.toLowerCase()} offers ${typedProperty.beds} spacious bedrooms and ${typedProperty.baths} elegant bathrooms. Retreat to the primary suite, a sanctuary of relaxation with a spa-inspired bath, making it a perfect sanctuary for those who appreciate the finer things in life.`}
                 </p>
               </div>
               <button className="mt-4 text-mosque font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all">
-                Read more
+                {dict.property?.about?.readMore || "Read more"}
                 <span className="material-icons text-sm">arrow_forward</span>
               </button>
             </div>
             
             <div className="bg-white p-8 rounded-xl shadow-sm border border-mosque/5">
-              <h2 className="text-lg font-semibold mb-6 text-nordic">Amenities</h2>
+              <h2 className="text-lg font-semibold mb-6 text-nordic">{dict.property?.amenities?.title || "Amenities"}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Smart Home System</span>
+                  <span>{dict.property?.amenities?.smartHome || "Smart Home System"}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Swimming Pool</span>
+                  <span>{dict.property?.amenities?.pool || "Swimming Pool"}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Central Heating & Cooling</span>
+                  <span>{dict.property?.amenities?.heating || "Central Heating & Cooling"}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Electric Vehicle Charging</span>
+                  <span>{dict.property?.amenities?.ev || "Electric Vehicle Charging"}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Private Gym</span>
+                  <span>{dict.property?.amenities?.gym || "Private Gym"}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Wine Cellar</span>
+                  <span>{dict.property?.amenities?.wine || "Wine Cellar"}</span>
                 </div>
               </div>
             </div>
@@ -209,12 +209,12 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                   <span className="material-icons">calculate</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-nordic">Estimated Payment</h3>
-                  <p className="text-sm text-nordic/60">Starting from <strong className="text-mosque">$5,430/mo</strong> with 20% down</p>
+                  <h3 className="font-semibold text-nordic">{dict.property?.mortgage?.title || "Estimated Payment"}</h3>
+                  <p className="text-sm text-nordic/60">{dict.property?.mortgage?.starting || "Starting from"} <strong className="text-mosque">$5,430/mo</strong> {dict.property?.mortgage?.downPayment || "with 20% down"}</p>
                 </div>
               </div>
               <button className="whitespace-nowrap px-4 py-2 bg-white border border-nordic/10 rounded-lg text-sm font-semibold hover:border-mosque transition-colors text-nordic">
-                Calculate Mortgage
+                {dict.property?.mortgage?.calculate || "Calculate Mortgage"}
               </button>
             </div>
           </div>

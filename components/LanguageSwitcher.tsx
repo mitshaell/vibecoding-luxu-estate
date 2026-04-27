@@ -27,10 +27,10 @@ export default function LanguageSwitcher({ currentLocale }: { currentLocale: str
     router.refresh();
   };
 
-  const languageNames: Record<string, string> = {
-    es: "ES",
-    en: "EN",
-    fr: "FR"
+  const languageInfo: Record<string, { name: string, flag: string }> = {
+    es: { name: "ES", flag: "https://flagcdn.com/es.svg" },
+    en: { name: "EN", flag: "https://flagcdn.com/us.svg" },
+    fr: { name: "FR", flag: "https://flagcdn.com/fr.svg" }
   };
 
   // Close dropdown when clicking outside
@@ -52,7 +52,9 @@ export default function LanguageSwitcher({ currentLocale }: { currentLocale: str
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="material-icons text-[18px]">language</span>
-        {languageNames[currentLocale]}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={languageInfo[currentLocale].flag} alt={currentLocale} className="w-4 h-3 object-cover rounded-sm border border-nordic-dark/10" />
+        {languageInfo[currentLocale].name}
       </button>
 
       {isOpen && (
@@ -69,7 +71,11 @@ export default function LanguageSwitcher({ currentLocale }: { currentLocale: str
                 role="menuitem"
                 onClick={() => handleLanguageChange(loc)}
               >
-                {languageNames[loc]}
+                <div className="flex items-center gap-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={languageInfo[loc].flag} alt={loc} className="w-4 h-3 object-cover rounded-sm border border-nordic-dark/10" />
+                  {languageInfo[loc].name}
+                </div>
               </button>
             ))}
           </div>

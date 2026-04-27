@@ -34,5 +34,44 @@
     "all": "Todos",
     "buy": "Comprar",
     "rent": "Alquilar"
+  },
+  "property": {
+    "tags": {
+      "premium": "Premium",
+      "new": "Nuevo"
+    },
+    "agent": {
+      "topRated": "Agente Destacado",
+      "schedule": "Agendar Visita",
+      "contact": "Contactar Agente"
+    },
+    "features": {
+      "title": "Características",
+      "sqm": "Metros Cuadrados",
+      "beds": "Habitaciones",
+      "baths": "Baños",
+      "garage": "Garaje"
+    },
+    "about": {
+      "title": "Acerca de esta casa",
+      "p1": "Experimente el lujo moderno en esta casa arquitectónicamente impresionante ubicada en el corazón de {location}. Diseñada con énfasis en la vida interior-exterior, la residencia cuenta con espacios bellamente diseñados que inundan los interiores con luz natural.",
+      "p2": "El/La exquisito/a {type} ofrece {beds} espaciosas habitaciones y {baths} baños elegantes. Retírese a la suite principal, un santuario de relajación con un baño inspirado en un spa, convirtiéndolo en un lugar perfecto para quienes aprecian las cosas finas de la vida.",
+      "readMore": "Leer más"
+    },
+    "amenities": {
+      "title": "Comodidades",
+      "smartHome": "Sistema de Casa Inteligente",
+      "pool": "Piscina",
+      "heating": "Calefacción y Aire Central",
+      "ev": "Carga de Vehículo Eléctrico",
+      "gym": "Gimnasio Privado",
+      "wine": "Bodega de Vinos"
+    },
+    "mortgage": {
+      "title": "Pago Estimado",
+      "starting": "Desde",
+      "downPayment": "con 20% de enganche",
+      "calculate": "Calcular Hipoteca"
+    }
   }
 }

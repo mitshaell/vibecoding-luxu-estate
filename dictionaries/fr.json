@@ -34,5 +34,44 @@
     "all": "Tout",
     "buy": "Acheter",
     "rent": "Louer"
+  },
+  "property": {
+    "tags": {
+      "premium": "Premium",
+      "new": "Nouveau"
+    },
+    "agent": {
+      "topRated": "Agent le Mieux Noté",
+      "schedule": "Planifier une Visite",
+      "contact": "Contacter l'Agent"
+    },
+    "features": {
+      "title": "Caractéristiques",
+      "sqm": "Mètres Carrés",
+      "beds": "Chambres",
+      "baths": "Salles de Bains",
+      "garage": "Garage"
+    },
+    "about": {
+      "title": "À propos de cette maison",
+      "p1": "Découvrez le luxe moderne dans cette maison à l'architecture époustouflante, située au cœur de {location}. Conçue en mettant l'accent sur la vie intérieur-extérieur, la résidence dispose d'espaces de vie magnifiquement agencés qui inondent les intérieurs de lumière naturelle.",
+      "p2": "Ce/Cette exquis(e) {type} offre {beds} chambres spacieuses et {baths} salles de bains élégantes. Retirez-vous dans la suite principale, un sanctuaire de relaxation avec une baignoire d'inspiration spa, ce qui en fait un endroit parfait pour ceux qui apprécient les belles choses de la vie.",
+      "readMore": "Lire la suite"
+    },
+    "amenities": {
+      "title": "Commodités",
+      "smartHome": "Système de Maison Intelligente",
+      "pool": "Piscine",
+      "heating": "Chauffage et Climatisation Centralisés",
+      "ev": "Recharge pour Véhicule Électrique",
+      "gym": "Salle de Sport Privée",
+      "wine": "Cave à Vin"
+    },
+    "mortgage": {
+      "title": "Paiement Estimé",
+      "starting": "À partir de",
+      "downPayment": "avec 20% d'apport",
+      "calculate": "Calculer l'Hypothèque"
+    }
   }
 }

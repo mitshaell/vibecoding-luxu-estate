@@ -34,5 +34,44 @@
     "all": "All",
     "buy": "Buy",
     "rent": "Rent"
+  },
+  "property": {
+    "tags": {
+      "premium": "Premium",
+      "new": "New"
+    },
+    "agent": {
+      "topRated": "Top Rated Agent",
+      "schedule": "Schedule Visit",
+      "contact": "Contact Agent"
+    },
+    "features": {
+      "title": "Property Features",
+      "sqm": "Square Meters",
+      "beds": "Bedrooms",
+      "baths": "Bathrooms",
+      "garage": "Garage"
+    },
+    "about": {
+      "title": "About this home",
+      "p1": "Experience modern luxury in this architecturally stunning home located in the heart of {location}. Designed with an emphasis on indoor-outdoor living, the residence features beautifully designed living spaces that flood the interiors with natural light.",
+      "p2": "The exquisite {type} offers {beds} spacious bedrooms and {baths} elegant bathrooms. Retreat to the primary suite, a sanctuary of relaxation with a spa-inspired bath, making it a perfect sanctuary for those who appreciate the finer things in life.",
+      "readMore": "Read more"
+    },
+    "amenities": {
+      "title": "Amenities",
+      "smartHome": "Smart Home System",
+      "pool": "Swimming Pool",
+      "heating": "Central Heating & Cooling",
+      "ev": "Electric Vehicle Charging",
+      "gym": "Private Gym",
+      "wine": "Wine Cellar"
+    },
+    "mortgage": {
+      "title": "Estimated Payment",
+      "starting": "Starting from",
+      "downPayment": "with 20% down",
+      "calculate": "Calculate Mortgage"
+    }
   }
 }
