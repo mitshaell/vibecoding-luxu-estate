@@ -5,7 +5,7 @@ import { locales, defaultLocale } from './lib/i18n';
 // Get the preferred locale, similar to above or using a library
 function getLocale(request: NextRequest): string {
   const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
-  if (cookieLocale && locales.includes(cookieLocale)) {
+  if (cookieLocale && (locales as ReadonlyArray<string>).includes(cookieLocale)) {
     return cookieLocale;
   }
 
@@ -24,10 +24,11 @@ function getLocale(request: NextRequest): string {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Exclude API routes, next internal files, and public files
+  // Exclude API routes, next internal files, public files, and auth routes
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
+    pathname.startsWith('/auth') ||   // ← Auth callback must not get a locale prefix
     pathname.includes('.') || 
     pathname === '/favicon.ico'
   ) {

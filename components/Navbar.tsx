@@ -1,7 +1,12 @@
 import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { createClient } from '../lib/supabase/server';
 
-export default function Navbar({ dict, locale }: { dict?: any; locale?: string }) {
+export default async function Navbar({ dict, locale }: { dict?: any; locale?: string }) {
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+  const avatarUrl = user?.user_metadata?.avatar_url;
   // Use fallbacks in case dict is missing (e.g. some client components or layouts not wrapped yet)
   const navDict = dict?.navbar || {
     buy: "Buy", rent: "Rent", sell: "Sell", savedHomes: "Saved Homes"
@@ -33,12 +38,20 @@ export default function Navbar({ dict, locale }: { dict?: any; locale?: string }
               <span className="material-icons">notifications_none</span>
               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-background-light"></span>
             </button>
-            <button className="flex items-center gap-2 pl-2 border-l border-nordic-dark/10 ml-2">
-              <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden ring-2 ring-transparent hover:ring-mosque transition-all">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt="Profile" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAWhQZ663Bd08kmzjbOPmUk4UIxYooNONShMEFXLR-DtmVi6Oz-TiaY77SPwFk7g0OobkeZEOMvt6v29mSOD0Xm2g95WbBG3ZjWXmiABOUwGU0LOySRfVDo-JTXQ0-gtwjWxbmue0qDm91m-zEOEZwAW6iRFB1qC1bAU-wkjxm67Sbztq8w7srHkFT9bVEC86qG-FzhOBTomhAurNRmx9l8Yfqabk328NfdKuVLckgCdaPsNFE3yN65MeoRi05GA_gXIMwG4YDIeA" />
+            {user ? (
+              <button className="flex items-center gap-2 pl-2 border-l border-nordic-dark/10 ml-2">
+                <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden ring-2 ring-transparent hover:ring-mosque transition-all">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img alt="Profile" className="w-full h-full object-cover" src={avatarUrl || `https://ui-avatars.com/api/?name=${user?.email?.charAt(0) || 'U'}&background=random`} />
+                </div>
+              </button>
+            ) : (
+              <div className="pl-2 border-l border-nordic-dark/10 ml-2 flex items-center">
+                <Link href={`/${currentLocale}/login`} className="px-4 py-2 rounded-lg text-sm font-medium bg-mosque text-white hover:bg-mosque/90 transition-colors">
+                  Login
+                </Link>
               </div>
-            </button>
+            )}
           </div>
         </div>
       </div>
