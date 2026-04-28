@@ -45,6 +45,10 @@
       "schedule": "Agendar Visita",
       "contact": "Contactar Agente"
     },
+    "status": {
+      "forSale": "EN VENTA",
+      "forRent": "EN ALQUILER"
+    },
     "features": {
       "title": "Características",
       "sqm": "Metros Cuadrados",

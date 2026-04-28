@@ -45,6 +45,10 @@
       "schedule": "Schedule Visit",
       "contact": "Contact Agent"
     },
+    "status": {
+      "forSale": "FOR SALE",
+      "forRent": "FOR RENT"
+    },
     "features": {
       "title": "Property Features",
       "sqm": "Square Meters",

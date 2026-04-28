@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Property } from "../lib/supabase";
 
-export default function PropertyCard({ property }: { property: Property }) {
+export default function PropertyCard({ property, dict }: { property: Property, dict?: any }) {
   return (
     <Link href={`/property/${property.slug}`} className="block h-full">
       <article className="bg-white rounded-xl overflow-hidden shadow-card hover:shadow-soft transition-all duration-300 group cursor-pointer h-full flex flex-col">
@@ -17,7 +17,7 @@ export default function PropertyCard({ property }: { property: Property }) {
             <span className="material-icons text-lg">favorite_border</span>
           </button>
           <div className={`absolute bottom-3 left-3 text-white text-xs font-bold px-2 py-1 rounded ${property.is_rent ? 'bg-mosque/90' : 'bg-nordic-dark/90'}`}>
-            {property.type}
+            {property.is_rent ? (dict?.property?.status?.forRent || "FOR RENT") : (dict?.property?.status?.forSale || "FOR SALE")}
           </div>
         </div>
         <div className="p-4 flex flex-col flex-grow">

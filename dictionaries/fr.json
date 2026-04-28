@@ -45,6 +45,10 @@
       "schedule": "Planifier une Visite",
       "contact": "Contacter l'Agent"
     },
+    "status": {
+      "forSale": "À VENDRE",
+      "forRent": "À LOUER"
+    },
     "features": {
       "title": "Caractéristiques",
       "sqm": "Mètres Carrés",
