@@ -1,15 +1,18 @@
 import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
+import UserMenu from "./UserMenu";
 import { createClient } from '../lib/supabase/server';
 
 export default async function Navbar({ dict, locale }: { dict?: any; locale?: string }) {
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
-  const avatarUrl = user?.user_metadata?.avatar_url;
-  // Use fallbacks in case dict is missing (e.g. some client components or layouts not wrapped yet)
+  const avatarUrl = user?.user_metadata?.avatar_url ?? null;
+
+  // Use fallbacks in case dict is missing
   const navDict = dict?.navbar || {
-    buy: "Buy", rent: "Rent", sell: "Sell", savedHomes: "Saved Homes"
+    buy: "Buy", rent: "Rent", sell: "Sell", savedHomes: "Saved Homes",
+    login: "Sign in", logout: "Sign out", profile: "My profile",
   };
   const currentLocale = locale || "es";
 
@@ -38,17 +41,22 @@ export default async function Navbar({ dict, locale }: { dict?: any; locale?: st
               <span className="material-icons">notifications_none</span>
               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-background-light"></span>
             </button>
+
             {user ? (
-              <button className="flex items-center gap-2 pl-2 border-l border-nordic-dark/10 ml-2">
-                <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden ring-2 ring-transparent hover:ring-mosque transition-all">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img alt="Profile" className="w-full h-full object-cover" src={avatarUrl || `https://ui-avatars.com/api/?name=${user?.email?.charAt(0) || 'U'}&background=random`} />
-                </div>
-              </button>
+              <UserMenu
+                avatarUrl={avatarUrl}
+                email={user.email ?? null}
+                logoutLabel={navDict.logout}
+                profileLabel={navDict.profile}
+                locale={currentLocale}
+              />
             ) : (
               <div className="pl-2 border-l border-nordic-dark/10 ml-2 flex items-center">
-                <Link href={`/${currentLocale}/login`} className="px-4 py-2 rounded-lg text-sm font-medium bg-mosque text-white hover:bg-mosque/90 transition-colors">
-                  Login
+                <Link
+                  href={`/${currentLocale}/login`}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-mosque text-white hover:bg-mosque/90 transition-colors"
+                >
+                  {navDict.login}
                 </Link>
               </div>
             )}

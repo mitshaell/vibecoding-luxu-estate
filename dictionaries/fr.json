@@ -3,7 +3,10 @@
     "buy": "Acheter",
     "rent": "Louer",
     "sell": "Vendre",
-    "savedHomes": "Sauvegardés"
+    "savedHomes": "Sauvegardés",
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "profile": "Mon profil"
   },
   "hero": {
     "titleStart": "Trouvez votre",
