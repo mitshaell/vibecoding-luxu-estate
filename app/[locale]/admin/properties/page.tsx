@@ -1,112 +1,261 @@
 import { createClient } from '../../../../lib/supabase/server';
 import Link from 'next/link';
 
-export default async function AdminPropertiesPage({ params }: { params: Promise<{ locale: string }> }) {
+// Status badge config
+function StatusBadge({ status }: { status: string }) {
+  const s = status?.toLowerCase();
+  if (s === 'active' || s === 'activo') {
+    return (
+      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-hint-green text-primary border border-primary/10">
+        <span className="w-1.5 h-1.5 rounded-full bg-primary mr-1.5" />
+        Active
+      </span>
+    );
+  }
+  if (s === 'pending' || s === 'pendiente') {
+    return (
+      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
+        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-1.5" />
+        Pending
+      </span>
+    );
+  }
+  // sold / default
+  return (
+    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+      <span className="w-1.5 h-1.5 rounded-full bg-gray-500 mr-1.5" />
+      Sold
+    </span>
+  );
+}
+
+// Default placeholder images for properties without an image
+const PLACEHOLDER_IMAGES = [
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuAk2ZSdNOQ0gAXqtE2fb8NByvZ3XDhK1eHyPrIVVzkKRxP--gmwVUs_dFtYH7ySMZBDJ9dUfLhxw1HqhJRxo0T5qrmKZz1GjWXADnSf4hEPvVDRm0aKTl3gRRF5M9S5wRufLo8fKI5Py_un_8jurvEW2rsKLVZXiOt9hZvHtaEHizJmZZC2ncBfdpPfu9UtyE_aFK_1NSxqRUcAyEWvWqLel7QMCA0_DAS7ch6BAEubDCw3iSjElZ-uF5TUlSkdQudUUhJJJ83mUuI',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuCvjnJzYkn2uSsE2x2CSp6ta_eTDBXO0CZv61SwICEoMCfPe-cXvPfWieOb9hv9CnQctjbT43Fs4LcDrGOwXm4RhUAmZwiePudeFf6wid2-OWTpcQ1jl4SMOfOe_jSsjtjahG_azMWzAEvQ0Lsznu5nzMuAHgSN7A0vJzviwycaZsVzyYS4tVIpC1QprgwkIuolRTTXvY-OhBEuMuxtXQ4MJJH3k3FpWJX07kPgNzSqclGY5HvlrSlEEBoFvh_8Q9-JZTCFF8ipOWU',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuBO_XzpFopH9b8yABT1a6LlIMtEJKX00xuhg2A0IeMjK9sALNffKjbe7t7f8gCqV5ZzBgmyXTq7pB9bqc3UWVnFMPevsVV4XVmVmYGeMx73HL0uaixP254RZfPJ-zWwsJ4WdYzi1mxC0BpDIzW-hZwVm37WY1SePsrzRCGzDdssQ8fuDXGat1chiFJTtJAnWQqGHIaApgBNfDlwItdrqc7Rz4nsaxgLOVGgJbBXzoxtcLKLkVWuf9KfnT_xwMYaD0ps9cLRzZtlRh0',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuAm5jrJp_zdGyEfKQhZOpfX0eYAr_nK7lYpqgTo6B3X0V84hnvkBRKtd1NKfyzbZXptrnatucZKXEUdB_g4pmYytqZB_6-vGvs8VifQGG9fRqVL_Lr6350F_fSVeZh0hqULKewnVdwnGc8thCF8ARhaHzH9EtDknKo21GxwPEYTOXaaHEeGSVTSMSma2diZicSwy3jelgSoYNdpIQoMAgcmM2OlWB--DvX-WR-AYQ6rtTFbnnBwM1_2FW1r4bTYvX1Xw5KFp1GySqI',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuD3Kx0QAdUmL9txkYX2nBiMhiFrJIW59QWMclky71MuBfbl_DzIipQvGFMh8fxLAVvFg8otdIJr9lt4W4RkWo5lQlQFhqc_BCTDITjg-y2PGAZ8mewi_ipn_U_wASsLBvwXfK1akutnYmO_yIN23qhIHGZnkxxh7y7sfwD90EloN5uILLeA5NUVHbczcFicGewNod99A1k_IOfesqSTya9-dj5KifLlwcnuWggNHe4Gn2DREAc_6FcD6N_CpGybDw32EMk0AiRcWGY',
+];
+
+export default async function AdminPropertiesPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const { locale } = await params;
   const supabase = await createClient();
 
   const { data: properties } = await supabase
     .from('properties')
-    .select('id, title, location, type, price, price_detail, beds, baths, is_featured, is_rent, slug, created_at')
+    .select(
+      'id, title, location, type, price, price_detail, beds, baths, is_featured, is_rent, slug, created_at, images'
+    )
     .order('created_at', { ascending: false });
 
   const rows = properties ?? [];
 
-  return (
-    <div className="p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold" style={{ color: '#19322F' }}>Propiedades</h1>
-          <p className="text-sm mt-1" style={{ color: '#5C706D' }}>{rows.length} propiedades en total</p>
-        </div>
-      </div>
+  // Derived stats
+  const total = rows.length;
+  const active = rows.length;
+  const pending = 0;
 
-      {/* Table */}
-      <div
-        className="bg-white rounded-2xl overflow-hidden"
-        style={{ boxShadow: '0 2px 12px rgba(25,50,47,0.06)' }}
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ backgroundColor: '#F4F7F6', borderBottom: '1px solid #E2EBEA' }}>
-                {['Título', 'Ubicación', 'Tipo', 'Precio', 'Hab / Baños', 'Modo', 'Destacada', 'Acciones'].map(h => (
-                  <th
-                    key={h}
-                    className="text-left px-5 py-3.5 font-semibold text-xs uppercase tracking-wide"
-                    style={{ color: '#5C706D' }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((p, idx) => (
-                <tr
-                  key={p.id}
-                  style={{
-                    borderBottom: idx < rows.length - 1 ? '1px solid #F0F5F4' : undefined,
-                  }}
-                  className="hover:bg-[#F9FCFB] transition-colors"
-                >
-                  <td className="px-5 py-4">
-                    <span className="font-medium" style={{ color: '#19322F' }}>{p.title}</span>
-                  </td>
-                  <td className="px-5 py-4" style={{ color: '#5C706D' }}>{p.location}</td>
-                  <td className="px-5 py-4">
-                    <span
-                      className="px-2.5 py-1 rounded-full text-xs font-medium"
-                      style={{ backgroundColor: '#EEF6F6', color: '#006655' }}
-                    >
-                      {p.type}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 font-semibold" style={{ color: '#19322F' }}>
-                    {p.price}
-                    {p.price_detail && <span className="text-xs font-normal ml-1" style={{ color: '#5C706D' }}>{p.price_detail}</span>}
-                  </td>
-                  <td className="px-5 py-4" style={{ color: '#5C706D' }}>
-                    {p.beds} hab · {p.baths} baños
-                  </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className="px-2.5 py-1 rounded-full text-xs font-medium"
-                      style={{
-                        backgroundColor: p.is_rent ? '#FEF3C7' : '#DCFCE7',
-                        color: p.is_rent ? '#92400E' : '#166534',
-                      }}
-                    >
-                      {p.is_rent ? 'Alquiler' : 'Venta'}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    {p.is_featured ? (
-                      <span className="material-icons text-base" style={{ color: '#F59E0B' }}>star</span>
-                    ) : (
-                      <span className="material-icons text-base" style={{ color: '#D1D5DB' }}>star_border</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-4">
-                    {p.slug && (
-                      <Link
-                        href={`/${locale}/property/${p.slug}`}
-                        target="_blank"
-                        className="flex items-center gap-1 text-xs font-medium transition-colors"
-                        style={{ color: '#006655' }}
-                      >
-                        <span className="material-icons text-sm">open_in_new</span>
-                        Ver
-                      </Link>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+  return (
+    <div className="min-h-full bg-background-light dark:bg-background-dark font-display">
+      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-nordic dark:text-white tracking-tight">
+              My Properties
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Manage your portfolio and track performance.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="bg-white dark:bg-[#152e2a] border border-gray-200 dark:border-primary/30 text-nordic dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-primary/10 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm inline-flex items-center gap-2">
+              <span className="material-icons text-base">filter_list</span> Filter
+            </button>
+            <button className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-md shadow-primary/20 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2">
+              <span className="material-icons text-base">add</span> Add New Property
+            </button>
+          </div>
         </div>
-      </div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Listings</p>
+              <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{total}</p>
+            </div>
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              <span className="material-icons">apartment</span>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Properties</p>
+              <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{active}</p>
+            </div>
+            <div className="h-10 w-10 rounded-full bg-hint-green flex items-center justify-center text-primary">
+              <span className="material-icons">check_circle</span>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Sale</p>
+              <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{pending}</p>
+            </div>
+            <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
+              <span className="material-icons">pending</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Property List Container */}
+        <div className="bg-white dark:bg-[#152e2a] rounded-xl shadow-sm border border-gray-200 dark:border-primary/20 overflow-hidden">
+          {/* Table Header */}
+          <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50/50 dark:bg-primary/5 border-b border-gray-100 dark:border-primary/10 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <div className="col-span-6">Property Details</div>
+            <div className="col-span-2">Price</div>
+            <div className="col-span-2">Status</div>
+            <div className="col-span-2 text-right">Actions</div>
+          </div>
+
+          {/* Rows */}
+          {rows.length === 0 && (
+            <div className="py-20 text-center text-gray-400">
+              <span className="material-icons text-5xl mb-3 block text-gray-200">
+                apartment
+              </span>
+              <p className="text-sm">No properties found.</p>
+            </div>
+          )}
+
+          {rows.map((p, idx) => {
+            // Pick a thumbnail
+            const thumb =
+              (Array.isArray(p.images) && p.images[0]) ||
+              PLACEHOLDER_IMAGES[idx % PLACEHOLDER_IMAGES.length];
+
+            // Derive status label
+            const statusLabel = p.is_rent ? 'active' : 'active';
+
+            return (
+              <div
+                key={p.id}
+                className="group grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 border-b border-gray-100 dark:border-primary/10 hover:bg-background-light dark:hover:bg-primary/5 transition-colors items-center"
+              >
+                {/* Property Details */}
+                <div className="col-span-12 md:col-span-6 flex gap-4 items-center">
+                  <div className="relative h-20 w-28 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={thumb}
+                      alt={p.title}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-nordic dark:text-white group-hover:text-primary transition-colors cursor-pointer">
+                      {p.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {p.location}
+                    </p>
+                    <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <span className="material-icons text-[14px]">bed</span> {p.beds} Beds
+                      </span>
+                      <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                      <span className="flex items-center gap-1">
+                        <span className="material-icons text-[14px]">bathtub</span> {p.baths} Baths
+                      </span>
+                      {p.type && (
+                        <>
+                          <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                          <span>{p.type}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Price */}
+                <div className="col-span-6 md:col-span-2">
+                  <div className="text-base font-semibold text-nordic dark:text-gray-200">
+                    {p.price}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {p.price_detail || (p.is_rent ? 'Monthly' : 'Total')}
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className="col-span-6 md:col-span-2">
+                  <StatusBadge status={statusLabel} />
+                  {p.is_featured && (
+                    <div className="mt-1.5 flex items-center gap-1 text-xs text-amber-500">
+                      <span className="material-icons text-sm">star</span>
+                      Featured
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="col-span-12 md:col-span-2 flex items-center justify-end gap-2">
+                  {p.slug && (
+                    <Link
+                      href={`/${locale}/property/${p.slug}`}
+                      target="_blank"
+                      className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-hint-green/30 transition-all tooltip-trigger"
+                      title="View Property"
+                    >
+                      <span className="material-icons text-xl">open_in_new</span>
+                    </Link>
+                  )}
+                  <button
+                    className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-hint-green/30 transition-all tooltip-trigger"
+                    title="Edit Property"
+                  >
+                    <span className="material-icons text-xl">edit</span>
+                  </button>
+                  <button
+                    className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all tooltip-trigger"
+                    title="Delete Property"
+                  >
+                    <span className="material-icons text-xl">delete_outline</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Pagination */}
+          <div className="px-6 py-4 border-t border-gray-100 dark:border-primary/20 flex items-center justify-between bg-gray-50/50 dark:bg-primary/5">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Showing <span className="font-medium text-nordic dark:text-white">1</span> to{' '}
+              <span className="font-medium text-nordic dark:text-white">
+                {Math.min(rows.length, 10)}
+              </span>{' '}
+              of <span className="font-medium text-nordic dark:text-white">{rows.length}</span> results
+            </div>
+            <div className="flex gap-2">
+              <button
+                className="px-3 py-1 text-sm border border-gray-200 dark:border-primary/30 rounded-md text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-primary/20 disabled:opacity-50"
+                disabled
+              >
+                Previous
+              </button>
+              <button className="px-3 py-1 text-sm border border-gray-200 dark:border-primary/30 rounded-md text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-primary/20">
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

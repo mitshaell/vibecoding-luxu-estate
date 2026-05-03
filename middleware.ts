@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
 import { locales, defaultLocale } from './lib/i18n';
 
 function getLocale(request: NextRequest): string {
@@ -32,55 +31,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ── 2. Admin route protection ─────────────────────────────────────────────
-  const isAdminPath = (locales as ReadonlyArray<string>).some(
-    (loc) => pathname.startsWith(`/${loc}/admin`) || pathname === `/${loc}/admin`
-  );
-
-  if (isAdminPath) {
-    const roleCookie = request.cookies.get('luxe_role');
-
-    if (roleCookie?.value === 'admin') {
-      // ✅ Cookie explicitly says admin — allow through, skip to locale logic below
-    } else if (roleCookie !== undefined) {
-      // Cookie IS present but is NOT 'admin' (e.g. 'user').
-      // We already have a definitive answer — go to login.
-      const locale = getLocale(request);
-      const loginUrl = new URL(`/${locale}/login`, request.url);
-      loginUrl.searchParams.set('next', pathname);
-      return NextResponse.redirect(loginUrl);
-    } else {
-      // Cookie is ABSENT — might be a stale session before the cookie was introduced.
-      // Check if a Supabase session exists before deciding what to do.
-      const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            getAll() { return request.cookies.getAll(); },
-            setAll() { /* read-only in middleware */ },
-          },
-        }
-      );
-
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        // No active session at all → send to login
-        const locale = getLocale(request);
-        const loginUrl = new URL(`/${locale}/login`, request.url);
-        loginUrl.searchParams.set('next', pathname);
-        return NextResponse.redirect(loginUrl);
-      }
-
-      // Has a session but no role cookie → refresh the cookie and come back
-      const refreshUrl = new URL('/auth/refresh-role', request.url);
-      refreshUrl.searchParams.set('next', pathname);
-      return NextResponse.redirect(refreshUrl);
-    }
-  }
-
-  // ── 3. Locale redirect ────────────────────────────────────────────────────
+  // ── 2. Locale redirect ────────────────────────────────────────────────────
+  // Admin auth/role protection is handled inside the admin layout (server component),
+  // which can properly read and refresh the Supabase session.
   const pathnameHasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );

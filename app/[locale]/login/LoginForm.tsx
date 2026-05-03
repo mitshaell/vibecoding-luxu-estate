@@ -8,11 +8,15 @@ export default function LoginForm() {
   const [loadingGoogle, setLoadingGoogle] = useState(false)
   const [loadingGithub, setLoadingGithub] = useState(false)
 
+  // IMPORTANT: The callback URL must be exactly what's registered in Supabase & GitHub/Google OAuth
+  // Do NOT add any query params here — they break provider URL matching.
+  const callbackUrl = () => `${window.location.origin}/auth/callback`
+
   const handleSignInWithGoogle = async () => {
     setLoadingGoogle(true)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: callbackUrl() },
     })
     if (error) { console.error(error); setLoadingGoogle(false) }
   }
@@ -21,7 +25,7 @@ export default function LoginForm() {
     setLoadingGithub(true)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: callbackUrl() },
     })
     if (error) { console.error(error); setLoadingGithub(false) }
   }

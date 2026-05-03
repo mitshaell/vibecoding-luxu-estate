@@ -10,11 +10,31 @@ interface AdminLayoutProps {
 export default async function AdminLayout({ children, params }: AdminLayoutProps) {
   const { locale } = await params;
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
 
-  if (!session) redirect(`/${locale}/login`);
+  // ── 1. Verify the user is authenticated ───────────────────────────────────
+  // IMPORTANT: use getUser() not getSession().
+  // getSession() reads from the cookie without re-validating with the server.
+  // getUser() sends the JWT to Supabase and confirms it is still valid.
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-  const user = session.user;
+  if (!user || userError) {
+    redirect(`/${locale}/login`);
+  }
+
+  // ── 2. Check role from user_roles ──────────────────────────────────────────
+  const { data: roleRow } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', user.id)
+    .single();
+
+  const role = roleRow?.role ?? 'user';
+
+  if (role !== 'admin') {
+    redirect(`/${locale}`);
+  }
+
+  // ── 3. Render admin panel ──────────────────────────────────────────────────
   const avatarUrl = user.user_metadata?.avatar_url;
   const displayName = user.user_metadata?.full_name || user.email;
 
@@ -36,7 +56,7 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 py-6 border-b border-white/10">
-          <div className="w-8 h-8 rounded-lg bg-mosque flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-[#006655] flex items-center justify-center">
             <span className="material-icons text-white text-lg">apartment</span>
           </div>
           <div>
@@ -64,7 +84,7 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={avatarUrl || `https://ui-avatars.com/api/?name=${displayName?.charAt(0)}&background=006655&color=fff`}
+              src={avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName?.charAt(0) ?? 'A')}&background=006655&color=fff`}
               alt="Avatar"
               className="w-8 h-8 rounded-full object-cover ring-2 ring-white/20"
             />
