@@ -12,7 +12,7 @@ interface HomePageProps {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{
     page?: string;
-    location?: string;
+    search?: string;
     type?: string;
     beds?: string;
     baths?: string;
@@ -27,12 +27,12 @@ export default async function Home({ params, searchParams }: HomePageProps) {
   const resolvedSearchParams = await searchParams;
   const currentPage = Math.max(1, parseInt(resolvedSearchParams?.page ?? "1", 10));
 
-  const location = resolvedSearchParams?.location;
+  const search = resolvedSearchParams?.search;
   const type = resolvedSearchParams?.type;
   const beds = resolvedSearchParams?.beds ? parseInt(resolvedSearchParams.beds, 10) : null;
   const baths = resolvedSearchParams?.baths ? parseInt(resolvedSearchParams.baths, 10) : null;
 
-  const isFilterApplied = Boolean(location || type || beds || baths);
+  const isFilterApplied = Boolean(search || type || beds || baths);
 
   const from = (currentPage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
@@ -52,8 +52,8 @@ export default async function Home({ params, searchParams }: HomePageProps) {
     .eq("is_active", true)
     .order("created_at", { ascending: true });
 
-  if (location) {
-    marketQuery = marketQuery.ilike("location", `%${location}%`);
+  if (search) {
+    marketQuery = marketQuery.ilike("title", `%${search}%`);
   }
   if (type) {
     // English type mappings to query the database, or we map back?

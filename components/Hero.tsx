@@ -8,12 +8,12 @@ export default function Hero({ dict }: { dict?: any }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [searchLocation, setSearchLocation] = useState(searchParams?.get("location") || "");
+  const [searchQuery, setSearchQuery] = useState(searchParams?.get("search") || "");
 
   // Fallback dictionaries in case it's not provided
   const heroDict = dict?.hero || {
     titleStart: "Find your", titleHighlight: "sanctuary", titleEnd: ".",
-    searchPlaceholder: "Search by city, neighborhood, or address...", searchButton: "Search", filters: "Filters"
+    searchPlaceholder: "Search by property name...", searchButton: "Search", filters: "Filters"
   };
   const propTypesDict = dict?.propertyTypes || {
     All: "All", House: "House", Apartment: "Apartment", Villa: "Villa", Penthouse: "Penthouse"
@@ -21,10 +21,10 @@ export default function Hero({ dict }: { dict?: any }) {
 
   const handleSearch = () => {
     const params = new URLSearchParams(searchParams?.toString() || "");
-    if (searchLocation) {
-      params.set("location", searchLocation);
+    if (searchQuery) {
+      params.set("search", searchQuery);
     } else {
-      params.delete("location");
+      params.delete("search");
     }
     params.set("page", "1");
     router.push(`?${params.toString()}`);
@@ -54,8 +54,8 @@ export default function Hero({ dict }: { dict?: any }) {
             className="block w-full pl-12 pr-4 py-4 rounded-xl border-none bg-white text-nordic-dark shadow-soft placeholder-nordic-muted/60 focus:ring-2 focus:ring-mosque focus:bg-white transition-all text-lg" 
             placeholder={heroDict.searchPlaceholder} 
             type="text" 
-            value={searchLocation}
-            onChange={(e) => setSearchLocation(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
           />
           <button 
