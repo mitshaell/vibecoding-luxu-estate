@@ -1,30 +1,21 @@
 import { createClient } from '../../../../lib/supabase/server';
 import Link from 'next/link';
+import { togglePropertyActive } from './actions';
 
-// Status badge config
-function StatusBadge({ status }: { status: string }) {
-  const s = status?.toLowerCase();
-  if (s === 'active' || s === 'activo') {
+// Status badge — now supports is_active
+function StatusBadge({ isActive }: { isActive: boolean }) {
+  if (isActive) {
     return (
       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-hint-green text-primary border border-primary/10">
         <span className="w-1.5 h-1.5 rounded-full bg-primary mr-1.5" />
-        Active
+        Activa
       </span>
     );
   }
-  if (s === 'pending' || s === 'pendiente') {
-    return (
-      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
-        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-1.5" />
-        Pending
-      </span>
-    );
-  }
-  // sold / default
   return (
-    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-      <span className="w-1.5 h-1.5 rounded-full bg-gray-500 mr-1.5" />
-      Sold
+    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5" />
+      Inactiva
     </span>
   );
 }
@@ -37,6 +28,36 @@ const PLACEHOLDER_IMAGES = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuAm5jrJp_zdGyEfKQhZOpfX0eYAr_nK7lYpqgTo6B3X0V84hnvkBRKtd1NKfyzbZXptrnatucZKXEUdB_g4pmYytqZB_6-vGvs8VifQGG9fRqVL_Lr6350F_fSVeZh0hqULKewnVdwnGc8thCF8ARhaHzH9EtDknKo21GxwPEYTOXaaHEeGSVTSMSma2diZicSwy3jelgSoYNdpIQoMAgcmM2OlWB--DvX-WR-AYQ6rtTFbnnBwM1_2FW1r4bTYvX1Xw5KFp1GySqI',
   'https://lh3.googleusercontent.com/aida-public/AB6AXuD3Kx0QAdUmL9txkYX2nBiMhiFrJIW59QWMclky71MuBfbl_DzIipQvGFMh8fxLAVvFg8otdIJr9lt4W4RkWo5lQlQFhqc_BCTDITjg-y2PGAZ8mewi_ipn_U_wASsLBvwXfK1akutnYmO_yIN23qhIHGZnkxxh7y7sfwD90EloN5uILLeA5NUVHbczcFicGewNod99A1k_IOfesqSTya9-dj5KifLlwcnuWggNHe4Gn2DREAc_6FcD6N_CpGybDw32EMk0AiRcWGY',
 ];
+
+// Toggle button — client component wrapper
+function ToggleActiveButton({
+  id,
+  isActive,
+  locale,
+}: {
+  id: string;
+  isActive: boolean;
+  locale: string;
+}) {
+  const action = togglePropertyActive.bind(null, id, isActive, locale);
+  return (
+    <form action={action}>
+      <button
+        type="submit"
+        title={isActive ? 'Desactivar propiedad' : 'Activar propiedad'}
+        className={`p-2 rounded-lg transition-all tooltip-trigger ${
+          isActive
+            ? 'text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20'
+            : 'text-gray-400 hover:text-primary hover:bg-hint-green/30'
+        }`}
+      >
+        <span className="material-icons text-xl">
+          {isActive ? 'toggle_on' : 'toggle_off'}
+        </span>
+      </button>
+    </form>
+  );
+}
 
 export default async function AdminPropertiesPage(props: {
   params: Promise<{ locale: string }>;
@@ -51,10 +72,11 @@ export default async function AdminPropertiesPage(props: {
 
   const supabase = await createClient();
 
+  // Admin panel shows ALL properties (active + inactive)
   const { data: properties, count } = await supabase
     .from('properties')
     .select(
-      'id, title, location, type, price, price_detail, beds, baths, is_featured, is_rent, slug, created_at, images',
+      'id, title, location, type, price, price_detail, beds, baths, is_featured, is_rent, is_active, slug, created_at, images',
       { count: 'exact' }
     )
     .order('created_at', { ascending: false })
@@ -64,9 +86,8 @@ export default async function AdminPropertiesPage(props: {
   const totalCount = count ?? 0;
 
   // Derived stats
-  const total = totalCount;
-  const active = totalCount;
-  const pending = 0;
+  const activeCount = rows.filter((p) => p.is_active).length;
+  const inactiveCount = rows.filter((p) => !p.is_active).length;
 
   return (
     <div className="min-h-full bg-background-light dark:bg-background-dark font-display">
@@ -75,18 +96,18 @@ export default async function AdminPropertiesPage(props: {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-nordic dark:text-white tracking-tight">
-              My Properties
+              Propiedades
             </h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">
-              Manage your portfolio and track performance.
+              Administra el portafolio de propiedades.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="bg-white dark:bg-[#152e2a] border border-gray-200 dark:border-primary/30 text-nordic dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-primary/10 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm inline-flex items-center gap-2">
-              <span className="material-icons text-base">filter_list</span> Filter
-            </button>
-            <Link href={`/${locale}/admin/properties/new`} className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-md shadow-primary/20 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2">
-              <span className="material-icons text-base">add</span> Add New Property
+            <Link
+              href={`/${locale}/admin/properties/new`}
+              className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-md shadow-primary/20 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2"
+            >
+              <span className="material-icons text-base">add</span> Nueva Propiedad
             </Link>
           </div>
         </div>
@@ -95,8 +116,8 @@ export default async function AdminPropertiesPage(props: {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
           <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Listings</p>
-              <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{total}</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total</p>
+              <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{totalCount}</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
               <span className="material-icons">apartment</span>
@@ -104,8 +125,8 @@ export default async function AdminPropertiesPage(props: {
           </div>
           <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Properties</p>
-              <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{active}</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Activas</p>
+              <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{activeCount}</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-hint-green flex items-center justify-center text-primary">
               <span className="material-icons">check_circle</span>
@@ -113,11 +134,11 @@ export default async function AdminPropertiesPage(props: {
           </div>
           <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Sale</p>
-              <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{pending}</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Inactivas</p>
+              <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{inactiveCount}</p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
-              <span className="material-icons">pending</span>
+            <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500">
+              <span className="material-icons">visibility_off</span>
             </div>
           </div>
         </div>
@@ -126,10 +147,10 @@ export default async function AdminPropertiesPage(props: {
         <div className="bg-white dark:bg-[#152e2a] rounded-xl shadow-sm border border-gray-200 dark:border-primary/20 overflow-hidden">
           {/* Table Header */}
           <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50/50 dark:bg-primary/5 border-b border-gray-100 dark:border-primary/10 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            <div className="col-span-6">Property Details</div>
-            <div className="col-span-2">Price</div>
-            <div className="col-span-2">Status</div>
-            <div className="col-span-2 text-right">Actions</div>
+            <div className="col-span-6">Detalles de la Propiedad</div>
+            <div className="col-span-2">Precio</div>
+            <div className="col-span-2">Estado</div>
+            <div className="col-span-2 text-right">Acciones</div>
           </div>
 
           {/* Rows */}
@@ -138,23 +159,21 @@ export default async function AdminPropertiesPage(props: {
               <span className="material-icons text-5xl mb-3 block text-gray-200">
                 apartment
               </span>
-              <p className="text-sm">No properties found.</p>
+              <p className="text-sm">No hay propiedades registradas.</p>
             </div>
           )}
 
           {rows.map((p, idx) => {
-            // Pick a thumbnail
             const thumb =
               (Array.isArray(p.images) && p.images[0]) ||
               PLACEHOLDER_IMAGES[idx % PLACEHOLDER_IMAGES.length];
 
-            // Derive status label
-            const statusLabel = p.is_rent ? 'active' : 'active';
-
             return (
               <div
                 key={p.id}
-                className="group grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 border-b border-gray-100 dark:border-primary/10 hover:bg-background-light dark:hover:bg-primary/5 transition-colors items-center"
+                className={`group grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 border-b border-gray-100 dark:border-primary/10 hover:bg-background-light dark:hover:bg-primary/5 transition-colors items-center ${
+                  !p.is_active ? 'opacity-60' : ''
+                }`}
               >
                 {/* Property Details */}
                 <div className="col-span-12 md:col-span-6 flex gap-4 items-center">
@@ -165,6 +184,11 @@ export default async function AdminPropertiesPage(props: {
                       alt={p.title}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
+                    {!p.is_active && (
+                      <div className="absolute inset-0 bg-gray-900/40 flex items-center justify-center">
+                        <span className="material-icons text-white text-2xl">visibility_off</span>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-nordic dark:text-white group-hover:text-primary transition-colors cursor-pointer">
@@ -175,11 +199,11 @@ export default async function AdminPropertiesPage(props: {
                     </p>
                     <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400 dark:text-gray-500">
                       <span className="flex items-center gap-1">
-                        <span className="material-icons text-[14px]">bed</span> {p.beds} Beds
+                        <span className="material-icons text-[14px]">bed</span> {p.beds} Camas
                       </span>
                       <span className="w-1 h-1 rounded-full bg-gray-300"></span>
                       <span className="flex items-center gap-1">
-                        <span className="material-icons text-[14px]">bathtub</span> {p.baths} Baths
+                        <span className="material-icons text-[14px]">bathtub</span> {p.baths} Baños
                       </span>
                       {p.type && (
                         <>
@@ -197,46 +221,41 @@ export default async function AdminPropertiesPage(props: {
                     {p.price}
                   </div>
                   <div className="text-xs text-gray-400">
-                    {p.price_detail || (p.is_rent ? 'Monthly' : 'Total')}
+                    {p.price_detail || (p.is_rent ? 'Mensual' : 'Total')}
                   </div>
                 </div>
 
                 {/* Status */}
                 <div className="col-span-6 md:col-span-2">
-                  <StatusBadge status={statusLabel} />
+                  <StatusBadge isActive={p.is_active} />
                   {p.is_featured && (
                     <div className="mt-1.5 flex items-center gap-1 text-xs text-amber-500">
                       <span className="material-icons text-sm">star</span>
-                      Featured
+                      Destacada
                     </div>
                   )}
                 </div>
 
                 {/* Actions */}
-                <div className="col-span-12 md:col-span-2 flex items-center justify-end gap-2">
+                <div className="col-span-12 md:col-span-2 flex items-center justify-end gap-1">
                   {p.slug && (
                     <Link
                       href={`/${locale}/property/${p.slug}`}
                       target="_blank"
-                      className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-hint-green/30 transition-all tooltip-trigger"
-                      title="View Property"
+                      className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-hint-green/30 transition-all"
+                      title="Ver Propiedad"
                     >
                       <span className="material-icons text-xl">open_in_new</span>
                     </Link>
                   )}
                   <Link
                     href={`/${locale}/admin/properties/${p.id}/edit`}
-                    className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-hint-green/30 transition-all tooltip-trigger"
-                    title="Edit Property"
+                    className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-hint-green/30 transition-all"
+                    title="Editar Propiedad"
                   >
                     <span className="material-icons text-xl">edit</span>
                   </Link>
-                  <button
-                    className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all tooltip-trigger"
-                    title="Delete Property"
-                  >
-                    <span className="material-icons text-xl">delete_outline</span>
-                  </button>
+                  <ToggleActiveButton id={p.id} isActive={p.is_active} locale={locale} />
                 </div>
               </div>
             );
@@ -245,11 +264,11 @@ export default async function AdminPropertiesPage(props: {
           {/* Pagination */}
           <div className="px-6 py-4 border-t border-gray-100 dark:border-primary/20 flex items-center justify-between bg-gray-50/50 dark:bg-primary/5">
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              Showing <span className="font-medium text-nordic dark:text-white">{Math.min(from + 1, totalCount)}</span> to{' '}
+              Mostrando <span className="font-medium text-nordic dark:text-white">{Math.min(from + 1, totalCount)}</span> a{' '}
               <span className="font-medium text-nordic dark:text-white">
                 {Math.min(to + 1, totalCount)}
               </span>{' '}
-              of <span className="font-medium text-nordic dark:text-white">{totalCount}</span> results
+              de <span className="font-medium text-nordic dark:text-white">{totalCount}</span> propiedades
             </div>
             <div className="flex gap-2">
               <Link
@@ -261,7 +280,7 @@ export default async function AdminPropertiesPage(props: {
                 }`}
                 aria-disabled={page <= 1}
               >
-                Previous
+                Anterior
               </Link>
               <Link
                 href={`/${locale}/admin/properties?page=${page + 1}`}
@@ -272,7 +291,7 @@ export default async function AdminPropertiesPage(props: {
                 }`}
                 aria-disabled={to + 1 >= totalCount}
               >
-                Next
+                Siguiente
               </Link>
             </div>
           </div>

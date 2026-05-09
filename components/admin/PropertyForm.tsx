@@ -4,6 +4,12 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../lib/supabase/client';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
+
+const PropertyMap = dynamic(() => import('../PropertyMap'), {
+  ssr: false,
+  loading: () => <div className="h-48 w-full rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse border border-gray-200 dark:border-gray-700"></div>
+});
 
 interface PropertyFormProps {
   locale: string;
@@ -46,6 +52,7 @@ export default function PropertyForm({ locale, initialData }: PropertyFormProps)
     parking: initialData?.parking || 0,
     amenities: initialData?.amenities || ([] as string[]),
     images: initialData?.images || ([] as string[]),
+    is_active: initialData?.is_active !== undefined ? initialData.is_active : true,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -134,6 +141,7 @@ export default function PropertyForm({ locale, initialData }: PropertyFormProps)
       title: formData.title,
       price: formData.price,
       is_rent: formData.status === 'for-rent',
+      is_active: formData.is_active,
       type: formData.type,
       description: formData.description,
       location: formData.location,
@@ -426,14 +434,23 @@ export default function PropertyForm({ locale, initialData }: PropertyFormProps)
                 />
               </div>
             </div>
-            <div className="relative h-48 w-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 group">
-              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS55FY7gfArnlTpNsdabJk9nBO5uQJgOwIsl8beO34JRZ9dMmjLoIkTuTUO72Y9L5tUmQqTReQWebUWadAWwLusGmRQiIict5sqY--yRaOxuYpTzfR4vv4RKh1ex6oxY64e0kbSeMudNO6pv-gG0WzVWs-pDfvQm5IoTQ1mT-tAV49LDkXAHZl317M1-D7eZw3N8o2ExKWTgg6oMAXOFVnkApIqnb7TZHekwSw8pWQxpJV2EKI8EQKQbQXJaSbjN8gB1n8b-ueWj8" alt="Map view" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-500" />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span className="bg-white/90 dark:bg-[#152e2a]/90 text-nordic dark:text-white px-3 py-1.5 rounded shadow-sm backdrop-blur-sm text-xs font-bold font-sf-pro flex items-center gap-1">
-                  <span className="material-icons text-sm text-primary">map</span> Preview
-                </span>
+            {formData.latitude && formData.longitude && !isNaN(parseFloat(formData.latitude as string)) && !isNaN(parseFloat(formData.longitude as string)) ? (
+              <PropertyMap 
+                lat={parseFloat(formData.latitude as string)} 
+                lng={parseFloat(formData.longitude as string)} 
+                title={formData.title || 'Property Location'}
+                className="h-48 w-full rounded-lg overflow-hidden z-0 relative shadow-sm border border-gray-200 dark:border-gray-700"
+              />
+            ) : (
+              <div className="relative h-48 w-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 group">
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS55FY7gfArnlTpNsdabJk9nBO5uQJgOwIsl8beO34JRZ9dMmjLoIkTuTUO72Y9L5tUmQqTReQWebUWadAWwLusGmRQiIict5sqY--yRaOxuYpTzfR4vv4RKh1ex6oxY64e0kbSeMudNO6pv-gG0WzVWs-pDfvQm5IoTQ1mT-tAV49LDkXAHZl317M1-D7eZw3N8o2ExKWTgg6oMAXOFVnkApIqnb7TZHekwSw8pWQxpJV2EKI8EQKQbQXJaSbjN8gB1n8b-ueWj8" alt="Map view placeholder" className="w-full h-full object-cover opacity-50 transition-all duration-500" />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="bg-white/90 dark:bg-[#152e2a]/90 text-nordic dark:text-white px-3 py-1.5 rounded shadow-sm backdrop-blur-sm text-xs font-bold font-sf-pro flex items-center gap-1">
+                    <span className="material-icons text-sm text-primary">map</span> Enter coordinates
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -505,6 +522,33 @@ export default function PropertyForm({ locale, initialData }: PropertyFormProps)
                   </div>
                 </div>
               ))}
+            </div>
+
+            <hr className="border-gray-100 dark:border-gray-800" />
+
+            {/* is_active Toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-nordic dark:text-gray-300 font-sf-pro">Publicada</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {formData.is_active ? 'Visible en el sitio público' : 'Oculta del sitio público'}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={formData.is_active}
+                onClick={() => setFormData((prev) => ({ ...prev, is_active: !prev.is_active }))}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                  formData.is_active ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    formData.is_active ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
             </div>
 
             <hr className="border-gray-100 dark:border-gray-800" />

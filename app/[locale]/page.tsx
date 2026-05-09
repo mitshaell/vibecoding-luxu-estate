@@ -41,6 +41,7 @@ export default async function Home({ params, searchParams }: HomePageProps) {
     .from("properties")
     .select("*")
     .eq("is_featured", true)
+    .eq("is_active", true)
     .order("created_at", { ascending: true })
     .limit(2);
 
@@ -48,6 +49,7 @@ export default async function Home({ params, searchParams }: HomePageProps) {
     .from("properties")
     .select("*", { count: "exact" })
     .eq("is_featured", false)
+    .eq("is_active", true)
     .order("created_at", { ascending: true });
 
   if (location) {
