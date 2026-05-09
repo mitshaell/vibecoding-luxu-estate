@@ -37,6 +37,8 @@ export default function PropertyForm({ locale, initialData }: PropertyFormProps)
     type: initialData?.type || 'house',
     description: initialData?.description || '',
     location: initialData?.location || '',
+    latitude: initialData?.latitude || '',
+    longitude: initialData?.longitude || '',
     area: initialData?.area || '',
     year_built: initialData?.year_built || '',
     beds: initialData?.beds || 0,
@@ -135,6 +137,8 @@ export default function PropertyForm({ locale, initialData }: PropertyFormProps)
       type: formData.type,
       description: formData.description,
       location: formData.location,
+      latitude: formData.latitude ? parseFloat(formData.latitude as string) : null,
+      longitude: formData.longitude ? parseFloat(formData.longitude as string) : null,
       area: formData.area.toString(),
       year_built: formData.year_built ? parseInt(formData.year_built) : null,
       beds: formData.beds,
@@ -385,6 +389,42 @@ export default function PropertyForm({ locale, initialData }: PropertyFormProps)
                 className="w-full px-4 py-2.5 rounded-md border-gray-200 dark:border-primary/30 bg-white dark:bg-background-dark text-nordic dark:text-white placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary transition-all text-sm font-sf-pro"
                 placeholder="Street Address, City, Zip"
               />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="latitude" className="block text-xs font-medium text-nordic dark:text-gray-300 mb-1.5 font-sf-pro">
+                  <span className="flex items-center gap-1">
+                    <span className="material-icons text-xs text-primary">my_location</span>
+                    Latitude
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  id="latitude"
+                  step="any"
+                  value={formData.latitude}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2.5 rounded-md border-gray-200 dark:border-primary/30 bg-white dark:bg-background-dark text-nordic dark:text-white placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary transition-all text-sm font-sf-pro"
+                  placeholder="18.4861"
+                />
+              </div>
+              <div>
+                <label htmlFor="longitude" className="block text-xs font-medium text-nordic dark:text-gray-300 mb-1.5 font-sf-pro">
+                  <span className="flex items-center gap-1">
+                    <span className="material-icons text-xs text-primary">my_location</span>
+                    Longitude
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  id="longitude"
+                  step="any"
+                  value={formData.longitude}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2.5 rounded-md border-gray-200 dark:border-primary/30 bg-white dark:bg-background-dark text-nordic dark:text-white placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary transition-all text-sm font-sf-pro"
+                  placeholder="-69.9312"
+                />
+              </div>
             </div>
             <div className="relative h-48 w-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 group">
               <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS55FY7gfArnlTpNsdabJk9nBO5uQJgOwIsl8beO34JRZ9dMmjLoIkTuTUO72Y9L5tUmQqTReQWebUWadAWwLusGmRQiIict5sqY--yRaOxuYpTzfR4vv4RKh1ex6oxY64e0kbSeMudNO6pv-gG0WzVWs-pDfvQm5IoTQ1mT-tAV49LDkXAHZl317M1-D7eZw3N8o2ExKWTgg6oMAXOFVnkApIqnb7TZHekwSw8pWQxpJV2EKI8EQKQbQXJaSbjN8gB1n8b-ueWj8" alt="Map view" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-500" />
