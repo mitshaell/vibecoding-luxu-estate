@@ -1,19 +1,32 @@
+import Link from 'next/link';
 import { createClient } from '../../../../lib/supabase/server';
 import RoleEditor from './RoleEditor';
 
 
-export default async function AdminUsersPage() {
+export default async function AdminUsersPage(props: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const { locale } = await props.params;
+  const searchParams = await props.searchParams;
+  const page = parseInt((searchParams.page as string) || '1', 10);
+  const limit = 10;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
   const currentUserId = session?.user?.id;
 
   // Fetch real user roles from DB
-  const { data: userRoles } = await supabase
+  const { data: userRoles, count } = await supabase
     .from('user_roles')
-    .select('user_id, role, created_at')
-    .order('created_at', { ascending: false });
+    .select('user_id, role, created_at', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(from, to);
 
   const rows = userRoles ?? [];
+  const totalCount = count ?? 0;
 
   return (
     <div className="min-h-full bg-background-light dark:bg-background-dark font-display flex flex-col antialiased">
@@ -40,8 +53,8 @@ export default async function AdminUsersPage() {
               />
             </div>
             {/* Add User */}
-            <button className="inline-flex items-center justify-center px-4 py-2.5 border border-primary text-sm font-medium rounded-lg text-primary bg-transparent hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors whitespace-nowrap">
-              <span className="material-icons text-lg mr-2">add</span>
+            <button className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-md shadow-primary/20 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2 whitespace-nowrap">
+              <span className="material-icons text-base">add</span>
               Add User
             </button>
           </div>
@@ -92,7 +105,7 @@ export default async function AdminUsersPage() {
                 return (
                   <div
                     key={row.user_id}
-                    className={`user-card group relative rounded-xl p-5 shadow-sm flex flex-col md:grid md:grid-cols-12 gap-4 items-center z-10 transition-all ${
+                    className={`user-card group relative rounded-xl p-5 shadow-sm flex flex-col md:grid md:grid-cols-12 gap-4 items-center transition-all ${
                       isSelf 
                         ? 'bg-active-green dark:bg-primary/20 border border-transparent hover:shadow-soft' 
                         : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:bg-active-green dark:hover:bg-primary/20'
@@ -179,49 +192,38 @@ export default async function AdminUsersPage() {
       {/* ── Pagination Footer ───────────────────────────────────────────── */}
       <footer className="mt-auto border-t border-nordic/5 bg-background-light dark:bg-background-dark py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+          <div className="flex-1 flex items-center justify-between">
             <div>
               <p className="text-sm text-nordic/60 dark:text-gray-400">
-                Showing <span className="font-medium text-nordic dark:text-white">1</span> to{' '}
-                <span className="font-medium text-nordic dark:text-white">{rows.length}</span> of{' '}
-                <span className="font-medium text-nordic dark:text-white">{rows.length}</span> users
+                Showing <span className="font-medium text-nordic dark:text-white">{Math.min(from + 1, totalCount)}</span> to{' '}
+                <span className="font-medium text-nordic dark:text-white">{Math.min(to + 1, totalCount)}</span> of{' '}
+                <span className="font-medium text-nordic dark:text-white">{totalCount}</span> users
               </p>
             </div>
-            <div>
-              <nav aria-label="Pagination" className="relative z-0 inline-flex rounded-md shadow-none -space-x-px">
-                <a href="#" className="relative inline-flex items-center px-2 py-2 rounded-l-md text-sm font-medium text-nordic/50 hover:text-primary transition-colors">
-                  <span className="sr-only">Previous</span>
-                  <span className="material-icons text-xl">chevron_left</span>
-                </a>
-                <a href="#" aria-current="page" className="z-10 bg-primary text-white relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md mx-1 shadow-sm">
-                  1
-                </a>
-                <a href="#" className="bg-transparent text-nordic/70 hover:bg-white hover:text-primary relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md mx-1 transition-colors">
-                  2
-                </a>
-                <a href="#" className="bg-transparent text-nordic/70 hover:bg-white hover:text-primary relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md mx-1 transition-colors">
-                  3
-                </a>
-                <span className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-nordic/40">
-                  ...
-                </span>
-                <a href="#" className="bg-transparent text-nordic/70 hover:bg-white hover:text-primary relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md mx-1 transition-colors">
-                  8
-                </a>
-                <a href="#" className="relative inline-flex items-center px-2 py-2 rounded-r-md text-sm font-medium text-nordic/50 hover:text-primary transition-colors">
-                  <span className="sr-only">Next</span>
-                  <span className="material-icons text-xl">chevron_right</span>
-                </a>
-              </nav>
+            <div className="flex gap-2">
+              <Link
+                href={`/${locale}/admin/users?page=${Math.max(1, page - 1)}`}
+                className={`px-3 py-1 text-sm border border-gray-200 dark:border-primary/30 rounded-md transition-colors ${
+                  page <= 1
+                    ? 'text-gray-400 bg-gray-50 dark:bg-gray-800 dark:text-gray-600 pointer-events-none'
+                    : 'text-nordic bg-white hover:bg-gray-50 dark:text-gray-300 dark:bg-gray-800 dark:hover:bg-primary/20'
+                }`}
+                aria-disabled={page <= 1}
+              >
+                Previous
+              </Link>
+              <Link
+                href={`/${locale}/admin/users?page=${page + 1}`}
+                className={`px-3 py-1 text-sm border border-gray-200 dark:border-primary/30 rounded-md transition-colors ${
+                  to + 1 >= totalCount
+                    ? 'text-gray-400 bg-gray-50 dark:bg-gray-800 dark:text-gray-600 pointer-events-none'
+                    : 'text-nordic bg-white hover:bg-gray-50 dark:text-gray-300 dark:bg-gray-800 dark:hover:bg-primary/20'
+                }`}
+                aria-disabled={to + 1 >= totalCount}
+              >
+                Next
+              </Link>
             </div>
-          </div>
-          <div className="flex items-center justify-between w-full sm:hidden">
-            <a href="#" className="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-nordic bg-white border border-gray-300 hover:bg-gray-50">
-              Previous
-            </a>
-            <a href="#" className="ml-3 relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-nordic bg-white border border-gray-300 hover:bg-gray-50">
-              Next
-            </a>
           </div>
         </div>
       </footer>

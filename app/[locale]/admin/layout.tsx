@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { createClient } from '../../../lib/supabase/server';
 import { redirect } from 'next/navigation';
+import AdminSidebarNav from './components/AdminSidebarNav';
+import AdminUserProfile from './components/AdminUserProfile';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -35,11 +37,11 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
   }
 
   // ── 3. Render admin panel ──────────────────────────────────────────────────
-  const avatarUrl = user.user_metadata?.avatar_url;
+  const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
   const displayName = user.user_metadata?.full_name || user.email;
 
   const navItems = [
-    { href: `/${locale}/admin`, label: 'Dashboard', icon: 'dashboard' },
+    { href: `/${locale}/admin`, label: 'Dashboard', icon: 'dashboard', exact: true },
     { href: `/${locale}/admin/properties`, label: 'Propiedades', icon: 'apartment' },
     { href: `/${locale}/admin/users`, label: 'Usuarios & Roles', icon: 'manage_accounts' },
   ];
@@ -66,41 +68,14 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all"
-            >
-              <span className="material-icons text-base">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <AdminSidebarNav navItems={navItems} />
 
         {/* User info at bottom */}
-        <div className="px-4 py-4 border-t border-white/10">
-          <div className="flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName?.charAt(0) ?? 'A')}&background=006655&color=fff`}
-              alt="Avatar"
-              className="w-8 h-8 rounded-full object-cover ring-2 ring-white/20"
-            />
-            <div className="flex-1 min-w-0">
-              <p className="text-white text-xs font-medium truncate">{displayName}</p>
-              <p className="text-white/40 text-xs">Administrador</p>
-            </div>
-          </div>
-          <Link
-            href={`/${locale}`}
-            className="mt-3 flex items-center gap-2 text-xs text-white/50 hover:text-white/80 transition-colors"
-          >
-            <span className="material-icons text-sm">arrow_back</span>
-            Volver al sitio
-          </Link>
-        </div>
+        <AdminUserProfile 
+          avatarUrl={avatarUrl}
+          displayName={displayName}
+          locale={locale}
+        />
       </aside>
 
       {/* ── Main content ───────────────────────────────────────────────────── */}

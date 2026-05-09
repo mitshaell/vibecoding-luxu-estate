@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'picsum.photos',
       },
+      // Supabase Storage
+      {
+        protocol: 'https',
+        hostname: 'ptpultafjskrkucqefgn.supabase.co',
+      },
       // Google OAuth avatars
       {
         protocol: 'https',

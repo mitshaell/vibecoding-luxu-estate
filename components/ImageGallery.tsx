@@ -39,6 +39,7 @@ export default function ImageGallery({ images, title }: { images: string[], titl
               src={img}
               alt={`${title} - Image ${index + 1}`}
               fill
+              sizes="(max-width: 768px) 100vw, 100vw"
               priority={index === 0}
               className="object-cover"
             />

@@ -38,26 +38,34 @@ const PLACEHOLDER_IMAGES = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuD3Kx0QAdUmL9txkYX2nBiMhiFrJIW59QWMclky71MuBfbl_DzIipQvGFMh8fxLAVvFg8otdIJr9lt4W4RkWo5lQlQFhqc_BCTDITjg-y2PGAZ8mewi_ipn_U_wASsLBvwXfK1akutnYmO_yIN23qhIHGZnkxxh7y7sfwD90EloN5uILLeA5NUVHbczcFicGewNod99A1k_IOfesqSTya9-dj5KifLlwcnuWggNHe4Gn2DREAc_6FcD6N_CpGybDw32EMk0AiRcWGY',
 ];
 
-export default async function AdminPropertiesPage({
-  params,
-}: {
+export default async function AdminPropertiesPage(props: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { locale } = await params;
+  const { locale } = await props.params;
+  const searchParams = await props.searchParams;
+  const page = parseInt((searchParams.page as string) || '1', 10);
+  const limit = 10;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
   const supabase = await createClient();
 
-  const { data: properties } = await supabase
+  const { data: properties, count } = await supabase
     .from('properties')
     .select(
-      'id, title, location, type, price, price_detail, beds, baths, is_featured, is_rent, slug, created_at, images'
+      'id, title, location, type, price, price_detail, beds, baths, is_featured, is_rent, slug, created_at, images',
+      { count: 'exact' }
     )
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .range(from, to);
 
   const rows = properties ?? [];
+  const totalCount = count ?? 0;
 
   // Derived stats
-  const total = rows.length;
-  const active = rows.length;
+  const total = totalCount;
+  const active = totalCount;
   const pending = 0;
 
   return (
@@ -77,9 +85,9 @@ export default async function AdminPropertiesPage({
             <button className="bg-white dark:bg-[#152e2a] border border-gray-200 dark:border-primary/30 text-nordic dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-primary/10 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm inline-flex items-center gap-2">
               <span className="material-icons text-base">filter_list</span> Filter
             </button>
-            <button className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-md shadow-primary/20 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2">
+            <Link href={`/${locale}/admin/properties/new`} className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-md shadow-primary/20 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2">
               <span className="material-icons text-base">add</span> Add New Property
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -216,12 +224,13 @@ export default async function AdminPropertiesPage({
                       <span className="material-icons text-xl">open_in_new</span>
                     </Link>
                   )}
-                  <button
+                  <Link
+                    href={`/${locale}/admin/properties/${p.id}/edit`}
                     className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-hint-green/30 transition-all tooltip-trigger"
                     title="Edit Property"
                   >
                     <span className="material-icons text-xl">edit</span>
-                  </button>
+                  </Link>
                   <button
                     className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all tooltip-trigger"
                     title="Delete Property"
@@ -236,22 +245,35 @@ export default async function AdminPropertiesPage({
           {/* Pagination */}
           <div className="px-6 py-4 border-t border-gray-100 dark:border-primary/20 flex items-center justify-between bg-gray-50/50 dark:bg-primary/5">
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              Showing <span className="font-medium text-nordic dark:text-white">1</span> to{' '}
+              Showing <span className="font-medium text-nordic dark:text-white">{Math.min(from + 1, totalCount)}</span> to{' '}
               <span className="font-medium text-nordic dark:text-white">
-                {Math.min(rows.length, 10)}
+                {Math.min(to + 1, totalCount)}
               </span>{' '}
-              of <span className="font-medium text-nordic dark:text-white">{rows.length}</span> results
+              of <span className="font-medium text-nordic dark:text-white">{totalCount}</span> results
             </div>
             <div className="flex gap-2">
-              <button
-                className="px-3 py-1 text-sm border border-gray-200 dark:border-primary/30 rounded-md text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-primary/20 disabled:opacity-50"
-                disabled
+              <Link
+                href={`/${locale}/admin/properties?page=${Math.max(1, page - 1)}`}
+                className={`px-3 py-1 text-sm border border-gray-200 dark:border-primary/30 rounded-md transition-colors ${
+                  page <= 1
+                    ? 'text-gray-400 bg-gray-50 dark:bg-gray-800 dark:text-gray-600 pointer-events-none'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-primary/20'
+                }`}
+                aria-disabled={page <= 1}
               >
                 Previous
-              </button>
-              <button className="px-3 py-1 text-sm border border-gray-200 dark:border-primary/30 rounded-md text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-primary/20">
+              </Link>
+              <Link
+                href={`/${locale}/admin/properties?page=${page + 1}`}
+                className={`px-3 py-1 text-sm border border-gray-200 dark:border-primary/30 rounded-md transition-colors ${
+                  to + 1 >= totalCount
+                    ? 'text-gray-400 bg-gray-50 dark:bg-gray-800 dark:text-gray-600 pointer-events-none'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-primary/20'
+                }`}
+                aria-disabled={to + 1 >= totalCount}
+              >
                 Next
-              </button>
+              </Link>
             </div>
           </div>
         </div>
