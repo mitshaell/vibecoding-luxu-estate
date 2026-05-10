@@ -17,7 +17,7 @@ function getLocale(request: NextRequest): string {
   return defaultLocale;
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── 1. Bypass: internals, API, static assets, and auth routes ────────────

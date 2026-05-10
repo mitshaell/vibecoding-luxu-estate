@@ -137,7 +137,7 @@ export default function PropertyForm({ locale, initialData }: PropertyFormProps)
     setLoading(true);
     setError(null);
 
-    const payload: any = {
+    const payload: Record<string, any> = {
       title: formData.title,
       price: formData.price,
       is_rent: formData.status === 'for-rent',
